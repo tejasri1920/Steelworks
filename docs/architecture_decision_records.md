@@ -1,45 +1,44 @@
-# Architecture Decision Record (ADR): Operations Unification Tool
+# Title
+Architecture Decision Record (ADR): Operations Unification Tool
 
-## 1. Context & Problem Statement
-An operations analyst needs to unify Production, Inspection, and Shipping data currently siloed in multiple spreadsheets. The solution must provide immediate, consistent answers for meetings (AC7, AC9) without manual reconciliation, while preventing **Scope Creep** through a clearly defined technical boundary.
+## Status
+Proposed
 
----
+## Context
+An operations analyst needs to unify Production, Inspection, and Shipping data that currently live in separate spreadsheets. The tool must allow querying by Lot ID or date range and present aligned records from all functions in a single, meeting-ready view, fulfilling the acceptance criteria around data alignment, visibility of missing data, and consistent results over time (AC1–AC4, AC7–AC10). The team is small (1–2 experienced developers), the expected usage is department-wide with a few concurrent users, data volume may reach thousands to millions of rows, and the timeline is weeks to a few months, which constrains architectural complexity and operational overhead.
 
-## 2. Architecture Inputs Mapping
+## Decision
+Adopt a modular monolithic, client–server web application with a layered backend, a single relational database, and synchronous request–response interaction.
 
-| Input | Value | Architectural Impact |
-| :--- | :--- | :--- |
-| **Users** | Operators, Engineers, Managers | Requires role-based access and simple, intuitive UX. |
-| **Usage Context** | Office & Factory Floor | Favors a web-based UI usable on standard PCs and laptops. |
-| **User Scale** | Department-wide | Supports a few to several concurrent users without complex scaling. |
-| **Data Volume** | Thousands to millions of rows | Necessitates a database-backed solution with indexing and efficient joins. |
-| **Concurrency** | A few simultaneous users | Single application server and single database instance are sufficient initially. |
-| **Reliability** | Retry on failure, no data loss for stored data | Requires robust error handling and database backups; spreadsheet read failures must be retried or surfaced clearly. |
-| **Security** | Role-based access | Requires login plus role-based authorization (operators vs engineers vs managers). |
-| **Team Size & Background** | 1–2 developers, experienced | Favors a monolithic architecture over microservices to reduce overhead. |
-| **Project Timeline** | Weeks to a few months | Avoids over-engineered distributed systems; optimizes for fast delivery and maintainability. |
+- System roles & communication: Client–server, with a web frontend (e.g., browser-based UI) consuming a backend API.
+- Deployment & evolution: Single deployable monolith, structured into clear modules (production, inspection, shipping, reporting).
+- Code organization: Layered architecture separating Presentation, Business Logic, and Data Access.
+- Data & state ownership: Single centralized relational database (e.g., PostgreSQL/SQL Server) holding normalized Production, Inspection, and Shipping tables.
+- Interaction model: Synchronous requests where the client waits for responses to Lot ID or date range queries.
 
----
+## Alternatives Considered
 
-## 3. Selected Architecture Dimensions
+1. **Event-driven architecture with asynchronous processing**
+   - Use events (e.g., “inspection_updated”, “shipment_created”) and background consumers to build views.
+   - Rejected because it adds significant operational and conceptual complexity for a small team, while the primary use case is interactive, request–response querying in meetings.
 
-### D1: System Roles & Communication → **Client–Server**
-- **Decision:** Use a synchronous request–response client–server model.
-- **Rationale:** Users require immediate feedback when searching for a Lot ID or date range (AC1, AC3), especially in meetings.
-- **Engineering Benefit:** Simplifies debugging and state management compared to event-driven models, with clear request and response boundaries.
-- **Technology Example:** Web client (e.g., React/Vue/etc.) consuming a REST API backend.
+2. **Microservices with database-per-service**
+   - Separate services for Production, Inspection, and Shipping, each owning its own database, with aggregation done via APIs or a reporting service.
+   - Rejected because the team size and timeline do not justify distributed deployment, cross-service coordination, and complex data consistency strategies for this internal reporting-style tool.
 
-### D2: Deployment & Evolution → **Monolith (Modular)**
-- **Decision:** Build and deploy as a single application (modular monolith).
-- **Rationale:** Given the small team size and strong alignment needs across Production, Inspection, and Shipping data (AC2), a monolith reduces network, deployment, and operational complexity.
-- **Engineering Benefit:** Keeps the “Lot ID” join logic within a single memory space, while structuring code into clear modules (production, inspection, shipping, reporting) to preserve a future path to further decomposition if required.
+3. **Spreadsheet-only or desktop-based solution**
+   - Use macros, Power Query, or a desktop BI/reporting tool directly on spreadsheets.
+   - Rejected because it offers weaker control over role-based access, maintainability, and repeatable, consistent query behavior at higher data volumes.
 
-### D3: Code Organization → **Layered Architecture**
-- **Decision:** Organize server code into Presentation, Business Logic, and Data Access layers.
-- **Rationale:** Protects the system from “dirty data”: the Data Access layer handles spreadsheet ingestion and mapping, while the Business Logic layer handles multi-functional alignment and rules (AC2, AC4, AC10).
-- **Engineering Benefit:** High maintainability; if spreadsheet formats or locations change, only the Data Access layer requires updates, minimizing impact on UI and business rules.
+## Consequences
 
-### D4: Data & State Ownership → **Single Database**
-- **Decision:** Use a centralized relational database (e.g., PostgreSQL or SQL Server).
-- **Rationale:** This is a reporting-heavy application; joining thousands to millions of rows across Production, Inspection, and Shipping (AC1, AC5, AC6) is most efficient in a single database using SQL joins and indexes.
-- **Engineering Benefit:** Provides strong consistency (AC9); users see a single source of truth, avoiding conflicting views of lot d
+### Positive
+- Strong consistency: A single relational database and synchronous access provide deterministic, repeatable results when reviewing the same lot or date range, aligning with the need for consistent answers in meetings.
+- Delivery velocity: A modular monolith with a layered backend allows 1–2 developers to implement ingestion, alignment, and UI within weeks, minimizing deployment and operational overhead.
+- Maintainability: Changes to spreadsheet formats or locations are isolated to the Data Access layer, while business logic and UI remain stable.
+- Evolution path: Clear domain modules (production, inspection, shipping, reporting) keep open the option of later extracting components if scaling or organizational needs change.
+
+### Negative
+- Scalability and performance limits: As data grows toward millions of rows and query complexity increases, the single database and synchronous model may require careful indexing, query tuning, and vertical scaling to maintain acceptable response times.
+- Single-point-of-failure risk: The monolithic application and single database instance create availability dependencies; outages affect all users until backup, monitoring, and recovery procedures are in place.
+- Limited decoupling: Tight coupling through a single schema means cross-cutting changes (e.g., major schema redesign) can impact multiple modules simultaneously, requiring coordinated deployments.
