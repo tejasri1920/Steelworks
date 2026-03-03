@@ -1,0 +1,84 @@
+# docker-compose.yml
+#
+# Defines three services that form the complete application stack:
+#   1. db       – PostgreSQL 16 with the ops schema applied
+#   2. backend  – FastAPI (Python) REST API
+#   3. frontend – React (Vite) static UI served by Nginx
+#
+# Usage:
+#   docker compose up --build        # first run
+#   docker compose up                # subsequent runs (images already built)
+#   docker compose down -v           # stop and remove volumes (wipes DB data)
+#
+# Environment variables are loaded from a .env file in the same directory.
+# See .env.example for required variables.
+
+services:
+  # -------------------------------------------------------------------------
+  # PostgreSQL Database
+  # Stores all lots, production, inspection, shipping, and completeness data.
+  # The ops schema DDL (schema.sql) is mounted into the Docker init directory
+  # so it runs automatically on first container start.
+  # -------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine          # Lightweight Alpine-based Postgres image
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Persist data between restarts
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql  # Auto-runs on first start
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql      # Sample data (optional)
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"    # Expose for local tooling (DBeaver, psql, etc.)
+    healthcheck:
+      # Ensures backend only starts after Postgres is ready to accept connections
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # FastAPI Backend
+  # Provides the REST API consumed by the React frontend.
+  # Waits for the db service to be healthy before starting (depends_on).
+  # -------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy    # Wait until Postgres passes its health check
+    # To enable hot-reload during development, add:
+    #   volumes:
+    #     - ./backend/app:/app/app
+
+  # -------------------------------------------------------------------------
+  # React Frontend (Nginx-served static build)
+  # Proxies /api/* requests to the backend container.
+  # -------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend
+
+volumes:
+  # Named volume so Postgres data survives container restarts
+  postgres_data:

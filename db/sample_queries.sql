@@ -1,8 +1,9 @@
+
 -- ============================================================
 -- Ops Analytics — Sample Queries
 -- Mapped to Acceptance Criteria AC1–AC7
 -- ============================================================
-
+SET search_path TO ops, public;
 
 -- ============================================================
 -- AC1 & AC2: All functions together by lot
@@ -144,7 +145,7 @@ SELECT
     l.start_date,
     l.end_date,
     SUM(p.quantity_produced)                          AS total_produced,
-    STRING_AGG(DISTINCT p.production_line, ', ')      AS lines_used,
+    STRING_AGG(DISTINCT p.production_line::TEXT, ', ')      AS lines_used,
     BOOL_OR(i.issue_flag)                             AS any_issues,
     COUNT(*) FILTER (WHERE i.issue_flag)              AS issue_count,
     MAX(s.shipment_status)                            AS latest_status,

@@ -1,0 +1,14 @@
+# backend/requirements.txt
+#
+# Production dependencies only — used by the Docker build (pip is more reliable
+# in Docker than Poetry without a pre-existing lock file).
+#
+# Keep in sync with [tool.poetry.dependencies] in pyproject.toml.
+# For local development, continue using:  poetry install
+#
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.9
+pydantic-settings>=2.3.0
+python-dotenv>=1.0.0

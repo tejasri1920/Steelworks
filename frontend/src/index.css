@@ -1,0 +1,21 @@
+/* src/index.css
+ * Global styles — Tailwind's three layers must be imported here.
+ * @tailwind base:       Tailwind's normalized base styles (similar to normalize.css)
+ * @tailwind components: Reusable component classes (none custom here yet)
+ * @tailwind utilities:  The utility classes used throughout components (e.g., p-4, text-blue-600)
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar for table overflow containers */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
+}
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+}

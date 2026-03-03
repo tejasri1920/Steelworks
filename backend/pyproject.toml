@@ -1,0 +1,54 @@
+# pyproject.toml
+#
+# Poetry project manifest for the Steelworks Operations Analytics backend.
+# Poetry manages dependency versions, virtual environments, and packaging.
+#
+# Install all dependencies:  poetry install
+# Run dev server:            poetry run uvicorn app.main:app --reload
+# Run tests:                 poetry run pytest
+# Run tests with coverage:   poetry run pytest --cov=app --cov-report=term-missing
+
+[tool.poetry]
+name         = "steelworks-ops-backend"
+version      = "0.1.0"
+description  = "Operations Analytics API — aligns Production, Inspection, and Shipping data by Lot ID."
+authors      = ["Your Name <your.email@example.com>"]   # ← CHANGE THIS
+license      = "MIT"
+package-mode = false   # This is an app, not a distributable package; disables packaging
+
+[tool.poetry.dependencies]
+python           = "^3.11"
+# FastAPI: high-performance async web framework with automatic OpenAPI docs
+fastapi          = "^0.111.0"
+# uvicorn: ASGI server that runs the FastAPI app; [standard] adds websocket support
+uvicorn          = {extras = ["standard"], version = "^0.30.0"}
+# SQLAlchemy: ORM for interacting with the PostgreSQL database
+sqlalchemy       = "^2.0.0"
+# psycopg2-binary: PostgreSQL adapter for Python (binary = no native compilation needed)
+psycopg2-binary  = "^2.9.9"
+# pydantic-settings: reads environment variables / .env into a typed Settings class
+pydantic-settings = "^2.3.0"
+# python-dotenv: loads .env files into environment (used by pydantic-settings)
+python-dotenv    = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+# pytest: test runner
+pytest           = "^8.2.0"
+# pytest-asyncio: support for async test functions (useful for async endpoints)
+pytest-asyncio   = "^0.23.0"
+# httpx: used by TestClient to make HTTP requests in tests without a live server
+httpx            = "^0.27.0"
+# pytest-cov: generates code coverage reports
+pytest-cov       = "^5.0.0"
+
+[build-system]
+requires      = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+# Where pytest looks for test files
+testpaths         = ["tests"]
+# Silence asyncio mode deprecation warning
+asyncio_mode      = "auto"
+# Show extra test summary info (failed, errors, skipped)
+addopts           = "-v --tb=short"
