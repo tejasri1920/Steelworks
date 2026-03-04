@@ -20,11 +20,10 @@
 # All tests use the `client` fixture (conftest.py) which provides a TestClient
 # backed by an in-memory SQLite database with no data unless `seeded_db` is used.
 
-import pytest
 from fastapi.testclient import TestClient
 
-
 # ── GET /api/v1/lots/ ─────────────────────────────────────────────────────────
+
 
 class TestListLots:
     """Tests for GET /api/v1/lots/ (list endpoint)."""
@@ -40,9 +39,7 @@ class TestListLots:
         assert response.status_code == 200
         assert response.json() == []
 
-    def test_list_lots_returns_all_lots_without_filter(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_list_lots_returns_all_lots_without_filter(self, client: TestClient, seeded_db) -> None:
         """
         When no date filter is applied, all four seeded lots are returned.
 
@@ -54,9 +51,7 @@ class TestListLots:
             "assert len(response.json()) == 4."
         )
 
-    def test_list_lots_date_filter_start_date(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_list_lots_date_filter_start_date(self, client: TestClient, seeded_db) -> None:
         """
         When start_date=2026-02-01, only LOT-D (start_date=2026-02-01) is returned.
         LOT-A, LOT-B, LOT-C (all January) are excluded.
@@ -70,9 +65,7 @@ class TestListLots:
             "assert response.json()[0]['lot_code'] == 'LOT-D'."
         )
 
-    def test_list_lots_date_filter_range(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_list_lots_date_filter_range(self, client: TestClient, seeded_db) -> None:
         """
         When start_date=2026-01-01 and end_date=2026-01-31, only January lots returned.
         LOT-D (February) is excluded.
@@ -86,9 +79,7 @@ class TestListLots:
             "assert all lot_codes are LOT-A, LOT-B, LOT-C."
         )
 
-    def test_list_lots_includes_completeness_score(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_list_lots_includes_completeness_score(self, client: TestClient, seeded_db) -> None:
         """
         Each row in the response must include overall_completeness,
         has_production_data, has_inspection_data, has_shipping_data.
@@ -104,9 +95,7 @@ class TestListLots:
             "Find LOT-D row, assert overall_completeness == 0."
         )
 
-    def test_list_lots_lot_b_has_correct_completeness(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_list_lots_lot_b_has_correct_completeness(self, client: TestClient, seeded_db) -> None:
         """
         LOT-B has production and shipping but no inspection → completeness = 67.
 
@@ -123,6 +112,7 @@ class TestListLots:
 
 
 # ── GET /api/v1/lots/{lot_code} ───────────────────────────────────────────────
+
 
 class TestGetLot:
     """Tests for GET /api/v1/lots/{lot_code} (detail endpoint)."""
@@ -156,9 +146,7 @@ class TestGetLot:
             "assert len(data['shipping_records']) == 1."
         )
 
-    def test_get_lot_lot_c_has_flagged_inspection(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_get_lot_lot_c_has_flagged_inspection(self, client: TestClient, seeded_db) -> None:
         """
         LOT-C's inspection record has issue_flag=True and issue_category='Dimensional'.
 
@@ -176,9 +164,7 @@ class TestGetLot:
             "assert ship['shipment_status'] == 'On Hold'."
         )
 
-    def test_get_lot_d_has_empty_child_record_lists(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_get_lot_d_has_empty_child_record_lists(self, client: TestClient, seeded_db) -> None:
         """
         LOT-D has no production, inspection, or shipping records.
         Child record lists must be empty [], not missing from the response.

@@ -46,10 +46,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_origins_list,   # Only listed origins can call the API
-    allow_credentials=True,                         # Allow cookies / Authorization headers
-    allow_methods=["*"],                            # Allow GET, POST, OPTIONS, etc.
-    allow_headers=["*"],                            # Allow Content-Type, Authorization, etc.
+    allow_origins=settings.allowed_origins_list,  # Only listed origins can call the API
+    allow_credentials=True,  # Allow cookies / Authorization headers
+    allow_methods=["*"],  # Allow GET, POST, OPTIONS, etc.
+    allow_headers=["*"],  # Allow Content-Type, Authorization, etc.
 )
 
 # ── Router registration ───────────────────────────────────────────────────────
@@ -63,6 +63,7 @@ app.include_router(reports.router, prefix="/api/v1")
 
 
 # ── Health check ──────────────────────────────────────────────────────────────
+
 
 @app.get(
     "/health",

@@ -17,11 +17,10 @@
 #   AC8  — shipment status (lot-summary endpoint)
 #   AC10 — completeness scores (lot-summary, incomplete-lots endpoints)
 
-import pytest
 from fastapi.testclient import TestClient
 
-
 # ── GET /api/v1/reports/lot-summary ──────────────────────────────────────────
+
 
 class TestLotSummary:
     """Tests for GET /api/v1/reports/lot-summary."""
@@ -38,22 +37,17 @@ class TestLotSummary:
             "assert response.json() == []."
         )
 
-    def test_lot_summary_returns_one_row_per_lot(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_lot_summary_returns_one_row_per_lot(self, client: TestClient, seeded_db) -> None:
         """
         With four seeded lots, the summary returns exactly four rows.
 
         AC7: One aggregated row per lot.
         """
         raise NotImplementedError(
-            "TODO: client.get('/api/v1/reports/lot-summary'). "
-            "assert len(response.json()) == 4."
+            "TODO: client.get('/api/v1/reports/lot-summary'). assert len(response.json()) == 4."
         )
 
-    def test_lot_summary_lot_a_has_correct_aggregates(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_lot_summary_lot_a_has_correct_aggregates(self, client: TestClient, seeded_db) -> None:
         """
         LOT-A: total_produced=500, any_issues=False, latest_status='Delivered',
                overall_completeness=100.
@@ -72,9 +66,7 @@ class TestLotSummary:
             "assert overall_completeness == 100."
         )
 
-    def test_lot_summary_lot_d_has_null_aggregates(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_lot_summary_lot_d_has_null_aggregates(self, client: TestClient, seeded_db) -> None:
         """
         LOT-D has no child records — all aggregate columns should be None/null.
         overall_completeness should be 0.
@@ -93,12 +85,11 @@ class TestLotSummary:
 
 # ── GET /api/v1/reports/inspection-issues ────────────────────────────────────
 
+
 class TestInspectionIssues:
     """Tests for GET /api/v1/reports/inspection-issues."""
 
-    def test_inspection_issues_returns_200_with_empty_list(
-        self, client: TestClient
-    ) -> None:
+    def test_inspection_issues_returns_200_with_empty_list(self, client: TestClient) -> None:
         """
         When no flagged inspections exist, returns HTTP 200 with [].
         """
@@ -140,12 +131,11 @@ class TestInspectionIssues:
 
 # ── GET /api/v1/reports/incomplete-lots ──────────────────────────────────────
 
+
 class TestIncompleteLots:
     """Tests for GET /api/v1/reports/incomplete-lots."""
 
-    def test_incomplete_lots_returns_200_with_empty_list(
-        self, client: TestClient
-    ) -> None:
+    def test_incomplete_lots_returns_200_with_empty_list(self, client: TestClient) -> None:
         """
         When no lots exist (empty DB), returns HTTP 200 with [].
         """
@@ -207,12 +197,11 @@ class TestIncompleteLots:
 
 # ── GET /api/v1/reports/line-issues ──────────────────────────────────────────
 
+
 class TestLineIssues:
     """Tests for GET /api/v1/reports/line-issues."""
 
-    def test_line_issues_returns_200_with_empty_list(
-        self, client: TestClient
-    ) -> None:
+    def test_line_issues_returns_200_with_empty_list(self, client: TestClient) -> None:
         """
         When no production or inspection records exist, returns HTTP 200 with [].
         """
@@ -222,9 +211,7 @@ class TestLineIssues:
             "assert response.json() == []."
         )
 
-    def test_line_issues_row_has_required_fields(
-        self, client: TestClient, seeded_db
-    ) -> None:
+    def test_line_issues_row_has_required_fields(self, client: TestClient, seeded_db) -> None:
         """
         Each row must contain production_line, total_inspections, total_issues,
         issue_rate_pct.

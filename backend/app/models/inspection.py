@@ -6,7 +6,17 @@
 # Supports AC1 (cross-function view), AC2 (lot alignment), AC5 (issue identification),
 # AC6 (flagged lots → shipment status), AC9 (inspection results in detail view).
 
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, Numeric, String, Text, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -38,29 +48,29 @@ class InspectionRecord(Base):
 
     __tablename__ = "inspection_records"
 
-    inspection_id    = Column(Integer, primary_key=True, index=True)
+    inspection_id = Column(Integer, primary_key=True, index=True)
 
     # ForeignKey is required — tells SQLAlchemy how to JOIN inspection_records to lots.
     # Without it, relationship() cannot determine the join condition.
-    lot_id           = Column(Integer, ForeignKey("lots.lot_id"), nullable=False, index=True)
+    lot_id = Column(Integer, ForeignKey("lots.lot_id"), nullable=False, index=True)
 
-    inspection_date  = Column(Date, nullable=False)
-    inspector_id     = Column(String(20), nullable=False)
+    inspection_date = Column(Date, nullable=False)
+    inspector_id = Column(String(20), nullable=False)
     inspection_result = Column(String(20), nullable=False)  # 'Pass' | 'Fail' | 'Conditional'
 
     # Boolean stored as 0/1 in SQLite, true/false in PostgreSQL.
     # SQLAlchemy handles the conversion transparently.
-    issue_flag       = Column(Boolean, nullable=False, default=False)
+    issue_flag = Column(Boolean, nullable=False, default=False)
 
     # NULL when issue_flag = False (no defect to categorize)
-    issue_category   = Column(String(50), nullable=True)
+    issue_category = Column(String(50), nullable=True)
 
-    defect_count     = Column(Integer, nullable=False, default=0)
-    sample_size      = Column(Integer, nullable=False, default=1)
+    defect_count = Column(Integer, nullable=False, default=0)
+    sample_size = Column(Integer, nullable=False, default=1)
 
-    notes            = Column(Text, nullable=True)
-    created_at       = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at       = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Back-reference: allows `record.lot` to navigate to the parent Lot object
     lot = relationship("Lot", back_populates="inspection_records")

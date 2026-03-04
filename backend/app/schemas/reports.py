@@ -13,7 +13,6 @@
 
 from datetime import date
 from decimal import Decimal
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -39,20 +38,20 @@ class LotSummaryRow(BaseModel):
 
     lot_id: int
     start_date: date
-    end_date: Optional[date] = None
+    end_date: date | None = None
 
     # Aggregated production columns — NULL if no production records
-    total_produced: Optional[int] = None       # SUM(quantity_produced)
-    lines_used: Optional[str] = None           # STRING_AGG of distinct production lines
+    total_produced: int | None = None  # SUM(quantity_produced)
+    lines_used: str | None = None  # STRING_AGG of distinct production lines
 
     # Aggregated inspection columns — NULL if no inspection records
-    any_issues: Optional[bool] = None          # BOOL_OR(issue_flag)
-    issue_count: Optional[int] = None          # COUNT(*) FILTER (WHERE issue_flag)
+    any_issues: bool | None = None  # BOOL_OR(issue_flag)
+    issue_count: int | None = None  # COUNT(*) FILTER (WHERE issue_flag)
 
     # Latest shipment status — NULL if no shipping records
-    latest_status: Optional[str] = None        # MAX(shipment_status) alphabetically
+    latest_status: str | None = None  # MAX(shipment_status) alphabetically
 
-    overall_completeness: Decimal              # 0, 33, 67, or 100
+    overall_completeness: Decimal  # 0, 33, 67, or 100
 
 
 class InspectionIssueRow(BaseModel):
@@ -69,13 +68,13 @@ class InspectionIssueRow(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     lot_id: int
-    inspection_result: str      # 'Pass' | 'Fail' | 'Conditional'
-    issue_flag: bool            # Always True in this view (filtered on issue_flag = TRUE)
+    inspection_result: str  # 'Pass' | 'Fail' | 'Conditional'
+    issue_flag: bool  # Always True in this view (filtered on issue_flag = TRUE)
 
     # NULL if no shipping record exists for this lot
-    shipment_status: Optional[str] = None
-    ship_date: Optional[date] = None
-    destination: Optional[str] = None
+    shipment_status: str | None = None
+    ship_date: date | None = None
+    destination: str | None = None
 
 
 class IncompleteLotRow(BaseModel):
@@ -90,11 +89,11 @@ class IncompleteLotRow(BaseModel):
 
     lot_id: int
     start_date: date
-    end_date: Optional[date] = None
+    end_date: date | None = None
     has_production_data: bool
     has_inspection_data: bool
     has_shipping_data: bool
-    overall_completeness: Decimal   # 0, 33, or 67 (never 100 — this view filters those out)
+    overall_completeness: Decimal  # 0, 33, or 67 (never 100 — this view filters those out)
 
 
 class LineIssueRow(BaseModel):
@@ -116,4 +115,4 @@ class LineIssueRow(BaseModel):
     production_line: str
     total_inspections: int
     total_issues: int
-    issue_rate_pct: Decimal     # e.g. 33.3 (one decimal place, from ROUND(...,1))
+    issue_rate_pct: Decimal  # e.g. 33.3 (one decimal place, from ROUND(...,1))

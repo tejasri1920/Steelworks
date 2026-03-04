@@ -33,7 +33,7 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 # Set TESTING=true BEFORE importing app modules so _build_engine() picks it up.
@@ -47,11 +47,8 @@ os.environ["TESTING"] = "true"
 # valid string works as a placeholder. setdefault leaves it unchanged if already set.
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 
-from app.database import Base, get_db       # noqa: E402
-from app.main import app                    # noqa: E402
-from app.models import Lot, ProductionRecord, InspectionRecord, ShippingRecord  # noqa: E402
-from app.repositories.lot_repo import refresh_data_completeness  # noqa: E402
-
+from app.database import Base, get_db  # noqa: E402
+from app.main import app  # noqa: E402
 
 # ── Engine and session factory ────────────────────────────────────────────────
 
@@ -70,12 +67,13 @@ SQLITE_URL = "sqlite:///:memory:"
 _test_engine = create_engine(
     SQLITE_URL,
     connect_args={"check_same_thread": False},
-    poolclass=StaticPool,   # All sessions share one connection → same in-memory DB
+    poolclass=StaticPool,  # All sessions share one connection → same in-memory DB
 )
 _TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=_test_engine)
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture(scope="function")
 def db() -> Session:
@@ -106,9 +104,9 @@ def db() -> Session:
     yield session  # Hand the session to the test function
 
     # Teardown (runs after the test finishes, even if the test raised an exception)
-    session.close()                          # Release the DB connection
-    app.dependency_overrides.clear()         # Remove the test override
-    Base.metadata.drop_all(_test_engine)     # Drop all tables → clean slate for the next test
+    session.close()  # Release the DB connection
+    app.dependency_overrides.clear()  # Remove the test override
+    Base.metadata.drop_all(_test_engine)  # Drop all tables → clean slate for the next test
 
 
 @pytest.fixture(scope="function")

@@ -16,7 +16,6 @@
 #     when accessing child relationships.
 
 from datetime import date
-from typing import Optional
 
 from sqlalchemy.orm import Session, joinedload
 
@@ -25,8 +24,8 @@ from app.models.lot import Lot
 
 def get_lots(
     db: Session,
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> list[Lot]:
     """
     Return all lots, optionally filtered to those whose start_date falls within
@@ -63,7 +62,7 @@ def get_lots(
     return query.order_by(Lot.lot_id).all()
 
 
-def get_lot_by_code(db: Session, lot_code: str) -> Optional[Lot]:
+def get_lot_by_code(db: Session, lot_code: str) -> Lot | None:
     """
     Return a single lot by its human-readable lot_code (e.g. 'LOT-20260112-001').
 

@@ -12,9 +12,9 @@
 #   AC9  — return full lot detail (all child records)
 
 from datetime import date
-from typing import Optional
+from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -25,7 +25,7 @@ from app.schemas.lot import LotDetail, LotSummary
 # prefix and tags are set here; main.py registers this router under /api/v1.
 router = APIRouter(
     prefix="/lots",
-    tags=["lots"],   # Groups endpoints under "lots" in the /docs Swagger UI
+    tags=["lots"],  # Groups endpoints under "lots" in the /docs Swagger UI
 )
 
 
@@ -40,15 +40,15 @@ router = APIRouter(
     ),
 )
 def list_lots(
-    start_date: Optional[date] = Query(
+    start_date: date | None = Query(
         default=None,
         description="Inclusive lower bound on lots.start_date (ISO-8601 date, e.g. 2026-01-01)",
     ),
-    end_date: Optional[date] = Query(
+    end_date: date | None = Query(
         default=None,
         description="Inclusive upper bound on lots.start_date (ISO-8601 date, e.g. 2026-01-31)",
     ),
-    db: Session = Depends(get_db),   # FastAPI injects a DB session per request
+    db: Session = Depends(get_db),  # FastAPI injects a DB session per request
 ) -> list[LotSummary]:
     """
     Return all lots, optionally filtered to a date range.
@@ -72,16 +72,18 @@ def list_lots(
     result = []
     for lot in lots:
         dc = lot.data_completeness  # DataCompleteness ORM object, or None
-        result.append(LotSummary(
-            lot_id=lot.lot_id,
-            lot_code=lot.lot_code,
-            start_date=lot.start_date,
-            end_date=lot.end_date,
-            has_production_data=dc.has_production_data if dc else False,
-            has_inspection_data=dc.has_inspection_data if dc else False,
-            has_shipping_data=dc.has_shipping_data if dc else False,
-            overall_completeness=dc.overall_completeness if dc else 0,
-        ))
+        result.append(
+            LotSummary(
+                lot_id=lot.lot_id,
+                lot_code=lot.lot_code,
+                start_date=lot.start_date,
+                end_date=lot.end_date,
+                has_production_data=dc.has_production_data if dc else False,
+                has_inspection_data=dc.has_inspection_data if dc else False,
+                has_shipping_data=dc.has_shipping_data if dc else False,
+                overall_completeness=Decimal(str(dc.overall_completeness)) if dc else Decimal(0),
+            )
+        )
     return result
 
 
@@ -96,7 +98,7 @@ def list_lots(
     ),
 )
 def get_lot(
-    lot_code: str,              # Path parameter — extracted from the URL
+    lot_code: str,  # Path parameter — extracted from the URL
     db: Session = Depends(get_db),
 ) -> LotDetail:
     """

@@ -48,10 +48,10 @@ class Lot(Base):
     # PostgreSQL connection in database.py. This keeps the model compatible
     # with both PostgreSQL (production) and SQLite (tests).
 
-    lot_id     = Column(Integer, primary_key=True, index=True)
-    lot_code   = Column(String(50), nullable=False, unique=True, index=True)
+    lot_id = Column(Integer, primary_key=True, index=True)
+    lot_code = Column(String(50), nullable=False, unique=True, index=True)
     start_date = Column(Date, nullable=False)
-    end_date   = Column(Date, nullable=True)   # NULL while lot is open
+    end_date = Column(Date, nullable=True)  # NULL while lot is open
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
@@ -61,7 +61,7 @@ class Lot(Base):
     # This prevents the N+1 problem: loading 100 lots doesn't fire 100+ extra queries.
 
     production_records = relationship(
-        "ProductionRecord",    # String reference avoids circular import
+        "ProductionRecord",  # String reference avoids circular import
         back_populates="lot",  # Bidirectional: ProductionRecord.lot → this Lot
         lazy="select",
     )
@@ -78,7 +78,7 @@ class Lot(Base):
     data_completeness = relationship(
         "DataCompleteness",
         back_populates="lot",
-        uselist=False,   # One-to-one: each lot has exactly one completeness row
+        uselist=False,  # One-to-one: each lot has exactly one completeness row
         lazy="select",
     )
 

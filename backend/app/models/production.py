@@ -7,7 +7,18 @@
 # Supports AC1 (cross-function view), AC2 (lot alignment), AC3 (date filter),
 # AC5 (production issue identification).
 
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, SmallInteger, String, Text, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    SmallInteger,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -41,32 +52,32 @@ class ProductionRecord(Base):
 
     __tablename__ = "production_records"
 
-    production_id     = Column(Integer, primary_key=True, index=True)
+    production_id = Column(Integer, primary_key=True, index=True)
 
     # ForeignKey is required — tells SQLAlchemy how to JOIN production_records to lots.
     # Without it, relationship() cannot determine the join condition.
-    lot_id            = Column(Integer, ForeignKey("lots.lot_id"), nullable=False, index=True)
+    lot_id = Column(Integer, ForeignKey("lots.lot_id"), nullable=False, index=True)
 
-    production_date   = Column(Date, nullable=False)
-    production_line   = Column(String(50), nullable=False)   # 'Line 1'–'Line 4'
+    production_date = Column(Date, nullable=False)
+    production_line = Column(String(50), nullable=False)  # 'Line 1'–'Line 4'
     quantity_produced = Column(Integer, nullable=False)
-    shift             = Column(String(20), nullable=False)   # 'Day' | 'Swing' | 'Night'
-    part_number       = Column(String(20), nullable=False)
-    units_planned     = Column(Integer, nullable=False)
+    shift = Column(String(20), nullable=False)  # 'Day' | 'Swing' | 'Night'
+    part_number = Column(String(20), nullable=False)
+    units_planned = Column(Integer, nullable=False)
 
     # SmallInteger uses 2 bytes instead of 4 — sufficient for downtime_min (max ~32767 min)
-    downtime_min      = Column(SmallInteger, nullable=False, default=0)
+    downtime_min = Column(SmallInteger, nullable=False, default=0)
 
     # Boolean stored as 0/1 in SQLite, true/false in PostgreSQL.
     # SQLAlchemy handles the conversion transparently.
-    line_issue        = Column(Boolean, nullable=False, default=False)
+    line_issue = Column(Boolean, nullable=False, default=False)
 
     # NULL when line_issue = False (no issue to categorize)
-    primary_issue     = Column(String(50), nullable=True)
+    primary_issue = Column(String(50), nullable=True)
 
-    supervisor_notes  = Column(Text, nullable=True)
-    created_at        = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at        = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    supervisor_notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Back-reference: allows `record.lot` to navigate to the parent Lot object
     lot = relationship("Lot", back_populates="production_records")

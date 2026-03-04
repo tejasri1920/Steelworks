@@ -20,9 +20,9 @@
 #                session for each HTTP request and closes it when the request ends.
 #                FastAPI injects it into route handler parameters automatically.
 
-from typing import Generator
+from collections.abc import Generator
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
@@ -41,10 +41,12 @@ class Base(DeclarativeBase):
     SQLAlchemy uses it to track all table definitions for schema creation
     and relationship resolution.
     """
+
     pass
 
 
 # ── Engine factory ────────────────────────────────────────────────────────────
+
 
 def _build_engine() -> Engine:
     """
@@ -96,6 +98,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 # ── FastAPI dependency ─────────────────────────────────────────────────────────
+
 
 def get_db() -> Generator[Session, None, None]:
     """

@@ -16,10 +16,8 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
-
 
 # ── Child record schemas ──────────────────────────────────────────────────────
 # These are embedded inside LotDetail to show full child records for a lot.
@@ -40,15 +38,15 @@ class ProductionRecordOut(BaseModel):
 
     production_id: int
     production_date: date
-    production_line: str        # 'Line 1'–'Line 4'
+    production_line: str  # 'Line 1'–'Line 4'
     quantity_produced: int
-    shift: str                  # 'Day' | 'Swing' | 'Night'
+    shift: str  # 'Day' | 'Swing' | 'Night'
     part_number: str
     units_planned: int
-    downtime_min: int           # Minutes of unplanned downtime (≥0)
+    downtime_min: int  # Minutes of unplanned downtime (≥0)
     line_issue: bool
-    primary_issue: Optional[str] = None   # None when line_issue=False
-    supervisor_notes: Optional[str] = None
+    primary_issue: str | None = None  # None when line_issue=False
+    supervisor_notes: str | None = None
 
 
 class InspectionRecordOut(BaseModel):
@@ -62,12 +60,12 @@ class InspectionRecordOut(BaseModel):
     inspection_id: int
     inspection_date: date
     inspector_id: str
-    inspection_result: str      # 'Pass' | 'Fail' | 'Conditional'
+    inspection_result: str  # 'Pass' | 'Fail' | 'Conditional'
     issue_flag: bool
-    issue_category: Optional[str] = None  # None when issue_flag=False
+    issue_category: str | None = None  # None when issue_flag=False
     defect_count: int
     sample_size: int
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class ShippingRecordOut(BaseModel):
@@ -81,11 +79,11 @@ class ShippingRecordOut(BaseModel):
     shipping_id: int
     ship_date: date
     carrier: str
-    tracking_number: Optional[str] = None   # None until carrier provides it
+    tracking_number: str | None = None  # None until carrier provides it
     destination: str
     quantity_shipped: int
-    shipment_status: str        # 'Pending' | 'In Transit' | 'Delivered' | 'On Hold'
-    notes: Optional[str] = None
+    shipment_status: str  # 'Pending' | 'In Transit' | 'Delivered' | 'On Hold'
+    notes: str | None = None
 
 
 # ── Top-level lot schemas ─────────────────────────────────────────────────────
@@ -105,15 +103,15 @@ class LotSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     lot_id: int
-    lot_code: str               # Human-readable identifier, e.g. 'LOT-20260112-001'
+    lot_code: str  # Human-readable identifier, e.g. 'LOT-20260112-001'
     start_date: date
-    end_date: Optional[date] = None   # None for lots still in progress
+    end_date: date | None = None  # None for lots still in progress
 
     # Completeness fields — derived from the data_completeness table
     has_production_data: bool
     has_inspection_data: bool
     has_shipping_data: bool
-    overall_completeness: Decimal   # 0, 33, 67, or 100
+    overall_completeness: Decimal  # 0, 33, 67, or 100
 
 
 class LotDetail(BaseModel):
@@ -133,7 +131,7 @@ class LotDetail(BaseModel):
     lot_id: int
     lot_code: str
     start_date: date
-    end_date: Optional[date] = None
+    end_date: date | None = None
 
     # Child record lists — empty list ([]) when no records exist for that domain
     production_records: list[ProductionRecordOut] = []

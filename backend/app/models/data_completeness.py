@@ -44,18 +44,18 @@ class DataCompleteness(Base):
     __tablename__ = "data_completeness"
 
     # lot_id is BOTH the primary key and the foreign key (1:1 with lots)
-    lot_id               = Column(Integer, ForeignKey("lots.lot_id"), primary_key=True)
+    lot_id = Column(Integer, ForeignKey("lots.lot_id"), primary_key=True)
 
     # Three boolean flags — one per data domain
-    has_production_data  = Column(Boolean, nullable=False, default=False)
-    has_inspection_data  = Column(Boolean, nullable=False, default=False)
-    has_shipping_data    = Column(Boolean, nullable=False, default=False)
+    has_production_data = Column(Boolean, nullable=False, default=False)
+    has_inspection_data = Column(Boolean, nullable=False, default=False)
+    has_shipping_data = Column(Boolean, nullable=False, default=False)
 
     # Numeric(5,2) stores up to 999.99 — sufficient for a 0–100 percentage.
     # Using Numeric (not Float) avoids floating-point rounding errors.
     overall_completeness = Column(Numeric(5, 2), nullable=False, default=0)
 
-    updated_at           = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Back-reference: allows `completeness.lot` to navigate to the parent Lot object
     # uselist=False enforces the 1:1 nature — returns a single object, not a list

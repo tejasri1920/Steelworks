@@ -11,8 +11,8 @@
 #   By importing everything here, any code that does `from app.models import *`
 #   or simply `import app.models` triggers registration of all five models.
 
-from app.models.lot              import Lot               # noqa: F401 (imported for side effects)
-from app.models.production       import ProductionRecord  # noqa: F401
-from app.models.inspection       import InspectionRecord  # noqa: F401
-from app.models.shipping         import ShippingRecord    # noqa: F401
-from app.models.data_completeness import DataCompleteness # noqa: F401
+from app.models.data_completeness import DataCompleteness  # noqa: F401
+from app.models.inspection import InspectionRecord  # noqa: F401
+from app.models.lot import Lot  # noqa: F401 (imported for side effects)
+from app.models.production import ProductionRecord  # noqa: F401
+from app.models.shipping import ShippingRecord  # noqa: F401
